@@ -1,0 +1,21 @@
+
+【FatFS】
+	FAT文件系统
+	网址：http://www.elm-chan.org/fsw/ff/00index_e.html
+	版本: R0.13b
+	发布日期: 2018-04-07
+  
+【LittleFS】
+	带掉电保护/擦写均衡嵌入式SPI FLASH文件系统
+  GIT:  https://github.com/ARMmbed/littlefs
+	版本: V2.0
+	发布日期: 2019-04-11
+  
+【Reliance-Edge】
+	带掉电保护安全嵌入式小型文件系统
+	网址：https://www.datalight.com/products/embedded-file-systems/reliance-edge
+  GIT:  https://github.com/datalightinc/reliance-edge/releases
+	版本: V2.3
+	发布日期: 2019-01-31
+  
+  

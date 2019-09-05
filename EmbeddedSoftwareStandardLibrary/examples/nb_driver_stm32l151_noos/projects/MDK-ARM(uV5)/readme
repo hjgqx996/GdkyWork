@@ -1,0 +1,16 @@
+Debug                调试版本,主要添加“断言”功能查错
+Release              正式版本,去掉"断言"功能
+
+project.Uv2          MDK uV3工程文件,双击这个文件可启动MDK
+
+project.Opt          MDK uV3工程配置参数
+
+project.uvproj       MDK uV4工程文件,双击这个文件可启动MDK
+
+project.uvopt        MDK uV4工程配置参数
+
+project.uvprojx      MDK uV5工程文件,双击这个文件可启动MDK
+
+project.uvoptx       MDK uV5工程配置参数
+
+script文件夹内为脚本执行文件

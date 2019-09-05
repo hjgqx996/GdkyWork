@@ -1,0 +1,24 @@
+﻿【CMSIS】
+	Cortex微控制器软件接口程序（Cortex Microcontroller Software Interface Standard (CMSIS). ）
+	版本: V5.0.2
+	发布日期: 2017-04-19
+
+【STM32F10x_StdPeriph_Driver】
+	STM32F10x系列CPU标准外设驱动程序
+	版本: V3.6.1
+	发布日期: 2012-03-05
+
+【STM32L1xx_StdPeriph_Driver】
+	STM32L1xx系列CPU标准外设驱动程序
+	版本: V1.3.1
+	发布日期: 2015-04-20
+	
+【STM32_USB-FS-Device_Driver】
+	STM32系列CPU USB全速设备驱动程序
+	版本: V4.0.0 
+	发布日期: 2012-08-28
+	
+【STM32F4xx_StdPeriph_Driver】
+	STM32F4xx系列CPU标准外设驱动程序
+	版本: V1.8.0
+	发布日期: 2016-11-04

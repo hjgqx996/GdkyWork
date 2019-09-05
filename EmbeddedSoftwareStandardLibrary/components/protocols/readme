@@ -1,0 +1,18 @@
+﻿【FreeModbus】
+	标准Modbus-RTU,Modbus-ASCII,Modbus-TCP从机和Modbus-RTU主机协议
+	网址：https://www.freemodbus.org/
+	版本: V1.5.0
+	发布日期: 2010-06-06
+
+【CanFestival】
+	CanOpen从机协议栈
+	网址：https://canfestival.org/
+	版本: V3.0.0
+	发布日期: 2015-08-04
+	
+	
+【jansson】
+	C library for working with JSON data
+	网址：http://www.digip.org/jansson/
+	版本: V2.12
+	发布日期: 2018-11-26

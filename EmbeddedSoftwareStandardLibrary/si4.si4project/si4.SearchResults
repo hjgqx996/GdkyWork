@@ -1,0 +1,5 @@
+---- NB_CMD_CSCON Matches (4 in 3 files) ----
+nbNETGetCSCON in nb.c (sources\app\nb-iot\src) :     NB_SET_CMD(NB_CMD_CSCON);
+nb_private.h (sources\app\nb-iot\inc) line 83 :     NB_CMD_CSCON,                     /*!< Signalling Connection Status */
+PT_THREAD in nb_threads.c (sources\app\nb-iot\src) :     } else if (nbobj.cmd == NB_CMD_CSCON) {
+PT_THREAD in nb_threads.c (sources\app\nb-iot\src) :         NB_START_CMD(NB_CMD_CSCON, NULL);
