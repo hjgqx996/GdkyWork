@@ -1,0 +1,8 @@
+- cpulibs    控制器外设库
+- ethernet   网络协议栈
+- filesystem 文件系统
+- gui        图形界面
+- protocols  标准总线通信协议
+- rtos       嵌入式实时操作系统
+- stdlibc    标准C函数库头文件(便于编程查询使用)
+- usrlibc    自定义C常用标准功能库

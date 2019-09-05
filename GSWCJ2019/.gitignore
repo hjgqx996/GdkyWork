@@ -1,0 +1,17 @@
+projects/MDK-ARM(uV5)/Flash/
+projects/MDK-ARM(uV5)/JLinkLog.txt
+projects/MDK-ARM(uV5)/JLinkSettings.ini
+projects/IAR-ARM(V7)/Release/
+projects/IAR-ARM(V7)/Debug/
+*.Administrator
+projects/MDK-ARM(uV5)/DebugConfig/
+*.scvd
+projects/MDK-ARM(uV5)/RTE/
+si4.si4project/cache/
+si4.si4project/Backup/
+projects/MDK-ARM(uV5)/Flash Debug.BAT
+documents/doxygen/html/
+documents/doxygen/doc/html/search/variables_a.js
+documents/doxygen/doc/html/
+examples/nb_driver_stm32l151_noos/projects/MDK-ARM(uV5)/Flash/
+examples/nb_driver_stm32l151_os/projects/MDK-ARM(uV5)/Flash/

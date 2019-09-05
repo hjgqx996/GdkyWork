@@ -1,0 +1,713 @@
+/**
+  ******************************************************************************
+  *               Copyright(C) 2018-2028 GDKY All Rights Reserved
+  *
+  * @file     libcheck.c
+  * @author   ZouZH
+  * @version  V1.04
+  * @date     29-Aug-2018
+  * @brief    Data check library.
+  ******************************************************************************
+  */
+// Verision History
+// 2014-03-07 V1.01 Create the header file
+// 2015-05-04 V1.02 Modify the chk_sum8() and add chk_sum8_dec()
+// 2018-07-12 V1.03 Code format specification
+// 2018-08-29 V1.04 Doxygen format specification
+
+
+
+/* INCLUDES ------------------------------------------------------------------- */
+#include "libcheck.h"
+#include <stddef.h>
+
+/** 
+ * @defgroup Check
+ * @brief 数据校验模块
+ * @{
+ */ 
+
+/* TYPEDEFS ------------------------------------------------------------------- */
+
+/* MACROS  -------------------------------------------------------------------- */
+
+/* CONSTANTS  ----------------------------------------------------------------- */
+
+#if (CHECK_CRC8 == TRUE)
+// X8+X5+X4+1=0x31
+static const uint8_t CRC8TAB[256]={
+// 0
+0x00, 0x31, 0x62, 0x53, 0xC4, 0xF5, 0xA6, 0x97,
+0xB9, 0x88, 0xDB, 0xEA, 0x7D, 0x4C, 0x1F, 0x2E,
+// 1
+0x43, 0x72, 0x21, 0x10, 0x87, 0xB6, 0xE5, 0xD4,
+0xFA, 0xCB, 0x98, 0xA9, 0x3E, 0x0F, 0x5C, 0x6D,
+// 2
+0x86, 0xB7, 0xE4, 0xD5, 0x42, 0x73, 0x20, 0x11,
+0x3F, 0x0E, 0x5D, 0x6C, 0xFB, 0xCA, 0x99, 0xA8,
+// 3
+0xC5, 0xF4, 0xA7, 0x96, 0x01, 0x30, 0x63, 0x52,
+0x7C, 0x4D, 0x1E, 0x2F, 0xB8, 0x89, 0xDA, 0xEB,
+// 4
+0x3D, 0x0C, 0x5F, 0x6E, 0xF9, 0xC8, 0x9B, 0xAA,
+0x84, 0xB5, 0xE6, 0xD7, 0x40, 0x71, 0x22, 0x13,
+// 5
+0x7E, 0x4F, 0x1C, 0x2D, 0xBA, 0x8B, 0xD8, 0xE9,
+0xC7, 0xF6, 0xA5, 0x94, 0x03, 0x32, 0x61, 0x50,
+// 6
+0xBB, 0x8A, 0xD9, 0xE8, 0x7F, 0x4E, 0x1D, 0x2C,
+0x02, 0x33, 0x60, 0x51, 0xC6, 0xF7, 0xA4, 0x95,
+// 7
+0xF8, 0xC9, 0x9A, 0xAB, 0x3C, 0x0D, 0x5E, 0x6F,
+0x41, 0x70, 0x23, 0x12, 0x85, 0xB4, 0xE7, 0xD6,
+// 8
+0x7A, 0x4B, 0x18, 0x29, 0xBE, 0x8F, 0xDC, 0xED,
+0xC3, 0xF2, 0xA1, 0x90, 0x07, 0x36, 0x65, 0x54,
+// 9
+0x39, 0x08, 0x5B, 0x6A, 0xFD, 0xCC, 0x9F, 0xAE,
+0x80, 0xB1, 0xE2, 0xD3, 0x44, 0x75, 0x26, 0x17,
+// A
+0xFC, 0xCD, 0x9E, 0xAF, 0x38, 0x09, 0x5A, 0x6B,
+0x45, 0x74, 0x27, 0x16, 0x81, 0xB0, 0xE3, 0xD2,
+// B
+0xBF, 0x8E, 0xDD, 0xEC, 0x7B, 0x4A, 0x19, 0x28,
+0x06, 0x37, 0x64, 0x55, 0xC2, 0xF3, 0xA0, 0x91,
+//C
+0x47, 0x76, 0x25, 0x14, 0x83, 0xB2, 0xE1, 0xD0,
+0xFE, 0xCF, 0x9C, 0xAD, 0x3A, 0x0B, 0x58, 0x69,
+// D
+0x04, 0x35, 0x66, 0x57, 0xC0, 0xF1, 0xA2, 0x93,
+0xBD, 0x8C, 0xDF, 0xFE, 0x79, 0x48, 0x1B, 0x2A,
+// E
+0xC1, 0xF0, 0xA3, 0x92, 0x05, 0x34, 0x67, 0x56,
+0x78, 0x49, 0x1A, 0x2B, 0xBC, 0x8D, 0xDE, 0xEF,
+// F
+0x82, 0xB3, 0xE0, 0xD1, 0x46, 0x77, 0x24, 0x15,
+0x3B, 0x0A, 0x59, 0x68, 0xFF, 0xCE, 0x9D, 0xAC
+};
+#endif  /* CHECK_CRC8 */
+
+
+#if (CHECK_CRC16MB == TRUE)
+static const uint8_t aucCRCHi[] = {
+    0x00, 0xC1, 0x81, 0x40, 0x01, 0xC0, 0x80, 0x41, 0x01, 0xC0, 0x80, 0x41,
+    0x00, 0xC1, 0x81, 0x40, 0x01, 0xC0, 0x80, 0x41, 0x00, 0xC1, 0x81, 0x40,
+    0x00, 0xC1, 0x81, 0x40, 0x01, 0xC0, 0x80, 0x41, 0x01, 0xC0, 0x80, 0x41,
+    0x00, 0xC1, 0x81, 0x40, 0x00, 0xC1, 0x81, 0x40, 0x01, 0xC0, 0x80, 0x41,
+    0x00, 0xC1, 0x81, 0x40, 0x01, 0xC0, 0x80, 0x41, 0x01, 0xC0, 0x80, 0x41,
+    0x00, 0xC1, 0x81, 0x40, 0x01, 0xC0, 0x80, 0x41, 0x00, 0xC1, 0x81, 0x40,
+    0x00, 0xC1, 0x81, 0x40, 0x01, 0xC0, 0x80, 0x41, 0x00, 0xC1, 0x81, 0x40,
+    0x01, 0xC0, 0x80, 0x41, 0x01, 0xC0, 0x80, 0x41, 0x00, 0xC1, 0x81, 0x40,
+    0x00, 0xC1, 0x81, 0x40, 0x01, 0xC0, 0x80, 0x41, 0x01, 0xC0, 0x80, 0x41,
+    0x00, 0xC1, 0x81, 0x40, 0x01, 0xC0, 0x80, 0x41, 0x00, 0xC1, 0x81, 0x40,
+    0x00, 0xC1, 0x81, 0x40, 0x01, 0xC0, 0x80, 0x41, 0x01, 0xC0, 0x80, 0x41,
+    0x00, 0xC1, 0x81, 0x40, 0x00, 0xC1, 0x81, 0x40, 0x01, 0xC0, 0x80, 0x41,
+    0x00, 0xC1, 0x81, 0x40, 0x01, 0xC0, 0x80, 0x41, 0x01, 0xC0, 0x80, 0x41,
+    0x00, 0xC1, 0x81, 0x40, 0x00, 0xC1, 0x81, 0x40, 0x01, 0xC0, 0x80, 0x41,
+    0x01, 0xC0, 0x80, 0x41, 0x00, 0xC1, 0x81, 0x40, 0x01, 0xC0, 0x80, 0x41,
+    0x00, 0xC1, 0x81, 0x40, 0x00, 0xC1, 0x81, 0x40, 0x01, 0xC0, 0x80, 0x41,
+    0x00, 0xC1, 0x81, 0x40, 0x01, 0xC0, 0x80, 0x41, 0x01, 0xC0, 0x80, 0x41,
+    0x00, 0xC1, 0x81, 0x40, 0x01, 0xC0, 0x80, 0x41, 0x00, 0xC1, 0x81, 0x40,
+    0x00, 0xC1, 0x81, 0x40, 0x01, 0xC0, 0x80, 0x41, 0x01, 0xC0, 0x80, 0x41,
+    0x00, 0xC1, 0x81, 0x40, 0x00, 0xC1, 0x81, 0x40, 0x01, 0xC0, 0x80, 0x41,
+    0x00, 0xC1, 0x81, 0x40, 0x01, 0xC0, 0x80, 0x41, 0x01, 0xC0, 0x80, 0x41,
+    0x00, 0xC1, 0x81, 0x40
+};
+
+static const uint8_t aucCRCLo[] = {
+    0x00, 0xC0, 0xC1, 0x01, 0xC3, 0x03, 0x02, 0xC2, 0xC6, 0x06, 0x07, 0xC7,
+    0x05, 0xC5, 0xC4, 0x04, 0xCC, 0x0C, 0x0D, 0xCD, 0x0F, 0xCF, 0xCE, 0x0E,
+    0x0A, 0xCA, 0xCB, 0x0B, 0xC9, 0x09, 0x08, 0xC8, 0xD8, 0x18, 0x19, 0xD9,
+    0x1B, 0xDB, 0xDA, 0x1A, 0x1E, 0xDE, 0xDF, 0x1F, 0xDD, 0x1D, 0x1C, 0xDC,
+    0x14, 0xD4, 0xD5, 0x15, 0xD7, 0x17, 0x16, 0xD6, 0xD2, 0x12, 0x13, 0xD3,
+    0x11, 0xD1, 0xD0, 0x10, 0xF0, 0x30, 0x31, 0xF1, 0x33, 0xF3, 0xF2, 0x32,
+    0x36, 0xF6, 0xF7, 0x37, 0xF5, 0x35, 0x34, 0xF4, 0x3C, 0xFC, 0xFD, 0x3D,
+    0xFF, 0x3F, 0x3E, 0xFE, 0xFA, 0x3A, 0x3B, 0xFB, 0x39, 0xF9, 0xF8, 0x38,
+    0x28, 0xE8, 0xE9, 0x29, 0xEB, 0x2B, 0x2A, 0xEA, 0xEE, 0x2E, 0x2F, 0xEF,
+    0x2D, 0xED, 0xEC, 0x2C, 0xE4, 0x24, 0x25, 0xE5, 0x27, 0xE7, 0xE6, 0x26,
+    0x22, 0xE2, 0xE3, 0x23, 0xE1, 0x21, 0x20, 0xE0, 0xA0, 0x60, 0x61, 0xA1,
+    0x63, 0xA3, 0xA2, 0x62, 0x66, 0xA6, 0xA7, 0x67, 0xA5, 0x65, 0x64, 0xA4,
+    0x6C, 0xAC, 0xAD, 0x6D, 0xAF, 0x6F, 0x6E, 0xAE, 0xAA, 0x6A, 0x6B, 0xAB,
+    0x69, 0xA9, 0xA8, 0x68, 0x78, 0xB8, 0xB9, 0x79, 0xBB, 0x7B, 0x7A, 0xBA,
+    0xBE, 0x7E, 0x7F, 0xBF, 0x7D, 0xBD, 0xBC, 0x7C, 0xB4, 0x74, 0x75, 0xB5,
+    0x77, 0xB7, 0xB6, 0x76, 0x72, 0xB2, 0xB3, 0x73, 0xB1, 0x71, 0x70, 0xB0,
+    0x50, 0x90, 0x91, 0x51, 0x93, 0x53, 0x52, 0x92, 0x96, 0x56, 0x57, 0x97,
+    0x55, 0x95, 0x94, 0x54, 0x9C, 0x5C, 0x5D, 0x9D, 0x5F, 0x9F, 0x9E, 0x5E,
+    0x5A, 0x9A, 0x9B, 0x5B, 0x99, 0x59, 0x58, 0x98, 0x88, 0x48, 0x49, 0x89,
+    0x4B, 0x8B, 0x8A, 0x4A, 0x4E, 0x8E, 0x8F, 0x4F, 0x8D, 0x4D, 0x4C, 0x8C,
+    0x44, 0x84, 0x85, 0x45, 0x87, 0x47, 0x46, 0x86, 0x82, 0x42, 0x43, 0x83,
+    0x41, 0x81, 0x80, 0x40
+};
+#endif  /* CHECK_CRC16MB */
+
+
+/* GLOBAL VARIABLES ----------------------------------------------------------- */
+
+/* GLOBAL FUNCTIONS ----------------------------------------------------------- */
+
+/* LOCAL VARIABLES ------------------------------------------------------------ */
+
+/* LOCAL FUNCTIONS ------------------------------------------------------------ */
+
+
+/**
+ * @brief 8-bit BCD checksum
+ *
+ * @param[in] pbuf: data buffer point
+ * @param[in] len:  data buffer length bytes
+ *
+ * @return 1Byte BCD checksum
+ */
+#if (CHECK_SUM8 == TRUE)
+uint8_t chk_sum8_dec(const void *pbuf, uint16_t len)
+{
+  uint8_t dec = 0;
+  const uint8_t *pdat = pbuf;
+
+  if (NULL == pdat)
+    return 0;
+
+  while (len)
+  {
+    dec += *pdat;
+
+    pdat += 1;
+    len -= 1;
+  }
+
+  dec = (((dec / 10) % 10) << 4 ) | (dec % 10);
+
+  return dec;
+}
+
+
+/**
+ * @brief 8-bit HEX checksum
+ *
+ * @param[in] pbuf: data buffer point
+ * @param[in] len:  data buffer length bytes
+ *
+ * @return 1Byte HEX checksum
+ */
+uint8_t chk_sum8_hex(const void *pbuf, uint16_t len)
+{
+  uint8_t sum = 0;
+  const uint8_t *pdat = pbuf;
+
+  if (NULL == pdat)
+    return 0;
+
+  while (len)
+  {
+    sum += *pdat;
+
+    pdat += 1;
+    len -= 1;
+  }
+
+  return sum;
+}
+
+/**
+ * @brief 8-bit HEX checksum, Each buffer byte is XOR with 0xFF
+ *
+ * @param[in] pbuf: data buffer point
+ * @param[in] len:  data buffer length bytes
+ *
+ * @return 1Byte HEX checksum
+ */
+uint8_t chk_sum8_hex_xor(const void *pbuf, uint16_t len)
+{
+  uint8_t sum = 0;
+  const uint8_t *pdat = pbuf;
+
+  if (NULL == pdat)
+    return 0;
+
+  while (len)
+  {
+    sum += (*pdat ^ 0xFF);
+
+    pdat += 1;
+    len -= 1;
+  }
+
+  return sum;
+}
+
+#endif  /* CHECK_SUM8 */
+
+
+/**
+ * @brief 16-bit HEX checksum
+ *
+ * @param[in] pbuf: data buffer point
+ * @param[in] len:  data buffer length bytes
+ *
+ * @return 2Byte HEX checksum
+ */
+#if (CHECK_SUM16 == TRUE)
+uint16_t chk_sum16(const void *pbuf, uint16_t len)
+{
+  uint16_t sum = 0;
+  const uint8_t *pdat = pbuf;
+
+  if (NULL == pdat)
+    return 0;
+
+  while (len)
+  {
+    sum += *pdat;
+
+    pdat += 1;
+    len -= 1;
+  }
+
+  return sum;
+}
+#endif  /* CHECK_SUM16 */
+
+
+/**
+ * @brief 32-bit HEX checksum
+ *
+ * @param[in] pbuf: data buffer point
+ * @param[in] len:  data buffer length bytes
+ *
+ * @return 4Byte HEX checksum
+ */
+#if (CHECK_SUM32 == TRUE)
+uint32_t chk_sum32(const void *pbuf, uint32_t len)
+{
+  uint32_t sum = 0;
+  const uint8_t *pdat = pbuf;
+
+  if (NULL == pdat)
+    return 0;
+
+  while (len)
+  {
+    sum += *pdat;
+
+    pdat += 1;
+    len -= 1;
+  }
+
+  return sum;
+}
+#endif  /* CHECK_SUM32 */
+
+
+/**
+ * @brief 8-bit HEX checksum for intel format
+ *
+ * @param[in] pbuf: data buffer point
+ * @param[in] len:  data buffer length bytes
+ *
+ * @return 1Byte HEX checksum
+ */
+#if (CHECK_SUMINTELHEX == TRUE)
+uint8_t chk_sum8_hex_intel(const void *pbuf, uint32_t len)
+{
+  uint8_t sum = 0;
+
+  sum = chk_sum8_hex(pbuf,len);
+  sum = 0x01 + (uint8_t)(sum ^ 0xFF);
+
+  return sum;
+}
+#endif  /* CHECK_SUMINTELHEX */
+
+
+/**
+ * @brief 16-bit HEX checksum for net format
+ *
+ * @param[in] pbuf: data buffer point
+ * @param[in] len:  data buffer length bytes
+ *
+ * @return 2Byte HEX checksum
+ */
+#if (CHECK_SUMNET == TRUE)
+uint16_t chk_sum16_net(const void *pbuf, uint16_t len)
+{
+  uint32_t sum = 0;
+  const uint8_t *pdat = pbuf;
+
+  if (NULL == pdat)
+    return 0;
+
+  while (len)
+  {
+    sum += *pdat;
+
+    pdat += 1;
+    len -= 1;
+  }
+
+  sum =  (sum >> 16) + (sum & 0xFFFF);
+  sum += (sum >> 16);
+
+  return ((uint16_t)(sum ^ 0xFFFF));
+}
+#endif  /* CHECK_SUMNET */
+
+
+/**
+ * @brief 8-bit BCC checksum
+ *
+ * @param[in] pbuf: data buffer point
+ * @param[in] len:  data buffer length bytes
+ *
+ * @return 1Byte BCC checksum
+ */
+#if (CHECK_BCC == TRUE)
+uint8_t chk_bcc(const void *pbuf, uint32_t len)
+{
+  uint8_t bcc = 0;
+  const uint8_t *pdat = pbuf;
+
+  if (NULL == pdat)
+    return 0;
+
+  while (len)
+  {
+    bcc ^= *pdat;
+
+    pdat += 1;
+    len -= 1;
+  }
+
+  return bcc;
+}
+#endif  /* CHECK_BCC */
+
+
+/**
+ * @brief 1-bit ODD checksum
+ *
+ * @param[in] pbuf: data buffer point
+ * @param[in] len:  data buffer length bytes
+ *
+ * @return 1Byte ODD checksum
+ */
+#if (CHECK_ODDEVEN == TRUE)
+uint8_t chk_odd(const void *pbuf, uint32_t len)
+{
+  uint8_t i = 0;
+  uint8_t d = 0;
+  uint8_t bParity = 0;
+
+  const uint8_t *pdat = pbuf;
+
+  if (NULL == pdat)
+    return 0;
+
+  while (len)
+  {
+    d = *pdat;
+    for (i = 0; i < 8; i++)
+    {
+      if ((d & 0x01) == 0x01)
+      {
+        if (bParity)
+          bParity = 0;
+        else
+          bParity = 1;
+      }
+      d = d >> 1;
+    }
+
+    len -= 1;
+    pdat += 1;
+  }
+
+  return bParity;
+}
+
+
+/**
+ * @brief 1-bit EVEN checksum
+ *
+ * @param[in] pbuf: data buffer point
+ * @param[in] len:  data buffer length bytes
+ *
+ * @return 1Byte EVEN checksum
+ */
+uint8_t chk_even(const void *pbuf, uint32_t len)
+{
+  if (chk_odd(pbuf, len))
+    return 0;
+  else
+    return 1;
+}
+#endif  /* CHECK_ODDEVEN */
+
+
+/**
+ * @brief 8-bit CRC checksum
+ *
+ * @param[in] pbuf: data buffer point
+ * @param[in] len:  data buffer length bytes
+ *
+ * @return 1Byte CRC checksum
+ */
+#if (CHECK_CRC8 == TRUE)
+uint8_t chk_crc8(const void *pbuf, uint32_t len)
+{
+  uint8_t crc = 0;
+  const uint8_t *pdat = pbuf;
+
+  if (NULL == pdat)
+    return 0;
+
+  while (len)
+  {
+    crc = CRC8TAB[crc ^ *pdat];
+
+    len -= 1;
+    pdat += 1;
+  }
+
+  return crc;
+}
+#endif  /* CHECK_CRC8 */
+
+
+/**
+ * @brief 16-bit CRC checksum
+ *
+ * @param[in] pbuf: data buffer point
+ * @param[in] len:  data buffer length bytes
+ *
+ * @return 2Byte CRC checksum
+ */
+#if (CHECK_CRC16 == TRUE)
+uint16_t chk_crc16(const void  *pbuf, uint32_t len)
+{
+  uint8_t j;
+  uint16_t crcReg = 0xFFFF;
+  uint16_t curVal = 0;
+  const uint8_t *pdat = pbuf;
+
+  if (NULL == pdat)
+    return 0;
+
+  while (len)
+  {
+    curVal = *pdat << 8;
+
+    for (j = 0; j < 8; j++)
+    {
+      if ((int16_t)(crcReg ^ curVal) < 0)
+        crcReg = (crcReg << 1) ^ 0x8005;
+      else
+        crcReg <<= 1;
+
+      curVal <<= 1;
+    }
+
+    len -= 1;
+    pdat += 1;
+  }
+  return crcReg;
+}
+#endif  /* CHECK_CRC16 */
+
+
+/**
+ * @brief 16-bit CRC-CCITT checksum
+ *
+ * @param[in] pbuf: data buffer point
+ * @param[in] len:  data buffer length bytes
+ *
+ * @return 2Byte CRC-CCITT checksum
+ */
+#if (CHECK_CRC16CCITT == TRUE)
+uint16_t chk_crc16_CCITT(const void * pbuf, uint32_t len)
+{
+  uint8_t j = 0;
+  uint16_t crcReg = 0xFFFF;
+  uint16_t curVal = 0;
+  const uint8_t *pdat = pbuf;
+
+  if (NULL == pdat)
+    return 0;
+
+  while (len)
+  {
+    curVal = *pdat << 8;
+
+    for (j = 0; j < 8; j++)
+    {
+      if ((int16_t)(crcReg ^ curVal) < 0)
+        crcReg = (crcReg << 1) ^ 0x1021;
+      else
+        crcReg <<= 1;
+
+      curVal <<= 1;
+    }
+
+    len -= 1;
+    pdat += 1;
+  }
+  return crcReg;
+}
+
+uint16_t chk_crc16_X25(const void * pbuf, uint32_t len)
+{
+  uint8_t i = 0;
+  uint16_t crc = 0xFFFF;
+  const uint8_t *pdat = pbuf;
+
+  if (NULL == pdat)
+    return 0;
+
+  while(len)
+  {
+    crc ^= *pdat;
+
+    for (i = 0; i < 8; ++i)
+    {
+      if (crc & 1)
+        crc = (crc >> 1) ^ 0x8408; // 0x8408 = reverse 0x1021
+      else
+        crc = (crc >> 1);
+    }
+
+    len -= 1;
+    pdat += 1;
+  }
+  return (crc ^ 0xFFFF); // crc^Xorout
+}
+
+#endif  /* CHECK_CRC16CCITT */
+
+
+/**
+ * @brief 16-bit CRC-RTU checksum
+ *
+ * @param[in] pbuf: data buffer point
+ * @param[in] len:  data buffer length bytes
+ *
+ * @return 2Byte CRC-RTU checksum
+ */
+#if (CHECK_CRC16RTU == TRUE)
+uint16_t chk_crc16_RTU(const void * pbuf, uint32_t len)
+{
+  uint16_t crc = 0XFFFF;
+  uint8_t i = 0;
+  const uint8_t *pdat = pbuf;
+
+  if (NULL == pdat)
+    return 0;
+
+  while (len)
+  {
+    crc ^=  *pdat;
+    for (i = 0; i < 8; i++)
+    {
+      if(crc & 1)
+        crc ^= 0xA001;
+
+      crc >>= 1;
+    }
+
+    len -= 1;
+    pdat += 1;
+  }
+  return crc;
+}
+
+#endif  /* CHECK_CRC16RTU */
+
+
+/**
+ * @brief 16-bit CRC-Modbus checksum
+ *
+ * @param[in] pbuf: data buffer point
+ * @param[in] len:  data buffer length bytes
+ *
+ * @return 2Byte CRC-Modbus checksum
+ */
+#if (CHECK_CRC16MB == TRUE)
+uint16_t chk_crc16_MB(const void * pbuf, uint16_t len)
+{
+  uint8_t ucCRCHi = 0xFF;
+  uint8_t ucCRCLo = 0xFF;
+  int16_t iIndex = 0;
+  const uint8_t *pdat = pbuf;
+
+  if (NULL == pdat)
+    return 0;
+
+  while (len)
+  {
+    iIndex = ucCRCLo ^ *pdat;
+    ucCRCLo = ( uint8_t )( ucCRCHi ^ aucCRCHi[iIndex] );
+    ucCRCHi = aucCRCLo[iIndex];
+
+    len -= 1;
+    pdat += 1;
+  }
+  return ( uint16_t )( ucCRCHi << 8 | ucCRCLo );
+}
+#endif  /* CHECK_CRC16MB */
+
+
+/**
+ * @brief 32-bit CRC checksum
+ *
+ * @param[in] pbuf: data buffer point
+ * @param[in] len:  data buffer length bytes
+ *
+ * @return 4Byte CRC checksum
+ */
+#if (CHECK_CRC32 == TRUE)
+static uint32_t reflect(uint32_t ref, char ch)
+{
+  uint32_t value = 0;
+  uint8_t i = 0;
+
+  for(i=1; i < (ch + 1); i++)
+  {
+    if (ref & 1)
+      value |= 1 << (ch - i);
+    ref >>= 1;
+  }
+  return value;
+}
+
+uint32_t chk_crc32(const void *pbuf, uint32_t len)
+{
+  uint32_t res = 0xFFFFFFFF;
+  uint32_t m_Table[256] = {0};
+
+  uint32_t ulPolynomial = 0x04C11DB7;
+  uint8_t i = 0;
+  uint8_t j = 0;
+  const uint8_t *pdat = pbuf;
+
+  if (NULL == pdat)
+    return 0;
+
+  for (i = 0; i < 0xFF; i++)
+  {
+    m_Table[i] = reflect(i, 8) << 24;
+    for (j=0; j < 8; j++)
+      m_Table[i] = (m_Table[i] << 1) ^ ((m_Table[i] & 0x80000000) ? ulPolynomial : 0);
+    m_Table[i] = reflect(m_Table[i], 32);
+  }
+
+  while (len--)
+    res = (res >> 8) ^ m_Table[(res & 0xFF) ^ *pdat++];
+
+  res ^= 0xFFFFFFFF;
+
+  return res;
+}
+#endif  /* CHECK_CRC32 */ 
+
+/**
+ * @}
+ */
+

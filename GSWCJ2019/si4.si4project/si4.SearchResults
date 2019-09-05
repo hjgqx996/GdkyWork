@@ -1,0 +1,7 @@
+---- SDA_READ Matches (6 in 1 files) ----
+fm24clxx.c (sources\bsp\msp430x44x) line 36 : #define SDA_READ()      P3IN_bit.P5
+i2c_start in fm24clxx.c (sources\bsp\msp430x44x) :   if(!SDA_READ()) return I2C_FALSE;  // SDA线为低电平则总线忙,退出
+i2c_start in fm24clxx.c (sources\bsp\msp430x44x) :   if(SDA_READ())  return I2C_FALSE;  // SDA线为高电平则总线出错,退出
+i2c_waitack in fm24clxx.c (sources\bsp\msp430x44x) :   if(SDA_READ())
+i2c_waitack in fm24clxx.c (sources\bsp\msp430x44x) :   while(SDA_READ())
+i2c_readbyte in fm24clxx.c (sources\bsp\msp430x44x) :     if (SDA_READ()) recbyte |= 0x01;
